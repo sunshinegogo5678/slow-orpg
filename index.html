@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SLOW ORPG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              slate: {
+                850: '#1e293b',
+              },
+              zinc: {
+                950: '#09090b',
+              },
+              // Custom Brand Palette based on #213555
+              brand: {
+                50: '#f0f4fa',
+                100: '#e1e9f5',
+                200: '#bdcce0',
+                300: '#94aeca',
+                400: '#688eb0',
+                500: '#467195',
+                600: '#213555', // Primary Color
+                700: '#1a2b45',
+                800: '#162236',
+                900: '#121b2b',
+              }
+            }
+          },
+        },
+      }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+      }
+      /* Custom Scrollbar for Notion-like feel */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+      }
+      .dark ::-webkit-scrollbar-thumb {
+        background: #475569;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+      
+      /* Rich Text Styles */
+      .markdown-content p { margin-bottom: 0.5em; }
+      .markdown-content p:last-child { margin-bottom: 0; }
+      .markdown-content img { max-width: 100%; border-radius: 8px; margin-top: 4px; margin-bottom: 4px; }
+      .markdown-content blockquote { border-left: 3px solid #cbd5e1; padding-left: 1rem; color: #64748b; font-style: italic; }
+      .dark .markdown-content blockquote { border-left-color: #475569; color: #94a3b8; }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
+    "react-markdown": "https://esm.sh/react-markdown@9.0.1?bundle",
+    "rehype-raw": "https://esm.sh/rehype-raw@7.0.0?bundle",
+    "remark-gfm": "https://esm.sh/remark-gfm@4.0.0?bundle",
+    "remark-breaks": "https://esm.sh/remark-breaks@4.0.0?bundle",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.93.2"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-slate-50 text-slate-900 dark:bg-zinc-950 dark:text-slate-50 transition-colors duration-200">
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
