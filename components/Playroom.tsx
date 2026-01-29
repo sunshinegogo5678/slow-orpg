@@ -11,7 +11,7 @@ import {
   ChevronDown, Send, Dices, Menu, X, MapPin, Clock, 
   Shield, Heart, ChevronLeft, Eye, EyeOff, Edit2, Brain, User,
   Lock, PenTool, Plus, Settings, Download, Copy, Check, HelpCircle,
-  AlertCircle, Info, Trash2, Save, ExternalLink
+  AlertCircle, Info, Trash2, ExternalLink
 } from 'lucide-react';
 
 interface PlayroomProps {
@@ -42,7 +42,6 @@ const DEFAULT_LOCATION: LocationInfo = {
 
 // --- Helper Functions ---
 
-// CoC 7th Edition Dice Logic with Bonus/Penalty
 const calculateCoC7eRoll = (target: number, modifier: number = 0) => {
   const units = Math.floor(Math.random() * 10);
   const tensMain = Math.floor(Math.random() * 10);
@@ -173,7 +172,7 @@ const RightSidebarSkeleton = () => (
 
 const RichMessage = ({ content }: { content: string }) => {
   const processedContent = content.replace(
-    /(^|\s)(https?:\/\/\S+\.(?:png|jpg|jpeg|gif|webp))(?=\s|$)/gi, 
+    /(^|\s)(https?:\/\/\S+\.(?:png|jpg|jpeg|gif|webp)(?:\?\S*)?)(?=\s|$)/gi, 
     '$1![]($2)'
   );
 
@@ -684,7 +683,7 @@ const SyntaxHelp = () => (
       </div>
       <div className="mt-2 pt-2 border-t border-zinc-700">
         <div className="mb-1 text-slate-400 font-semibold">이미지 (Image)</div>
-        <div className="text-[10px] text-slate-400 mb-1">URL ends in .jpg/.png auto-converts.</div>
+        <div className="text-[10px] text-slate-400 mb-1">이미지 주소 붙여넣기 (디스코드 링크 가능)</div>
       </div>
     </div>
   </div>
@@ -841,7 +840,7 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
                 
                 // Send to Discord
                 if (campaignData?.discord_webhook_url) {
-                    sendToDiscord(campaignData.discord_webhook_url, `${updated.name} (System)`, content);
+                    sendToDiscord(campaignData.discord_webhook_url, `${updated.name} (System)`, content, updated.avatarUrl);
                 }
 
                 // Insert into Supabase (Chat Log)
@@ -851,6 +850,7 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
                     content: content,
                     type: 'talk', // Changed from 'ooc' to 'talk' to appear in Main Story
                     speaker_name: updated.name,
+                    avatar_url: updated.avatarUrl // Insert Avatar URL
                 });
 
                 if (msgError) {
@@ -873,7 +873,7 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
       try {
         const [campaignRes, profileRes] = await Promise.all([
            supabase.from('campaigns').select('*').eq('id', campaignId).single(),
-           supabase.from('profiles').select('nickname').eq('id', session.user.id).single()
+           supabase.from('profiles').select('nickname, avatar_url').eq('id', session.user.id).single()
         ]);
 
         if (campaignRes.data) {
@@ -895,6 +895,7 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
         if (profileRes.data) {
            setUserNickname(profileRes.data.nickname);
            if (!customSpeakerName) setCustomSpeakerName(profileRes.data.nickname);
+           // userAvatarUrl could be stored if we want OOC to have avatar
         }
 
         // Fetch User's Characters for this Campaign
@@ -1094,18 +1095,16 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
     const isOOC = activeTab === 'ooc';
     let msgType: Message['type'] = isOOC ? 'ooc' : 'talk';
     let finalSenderName = customSpeakerName || userNickname || 'Unknown';
-    // let finalAvatarUrl: string | undefined = undefined;
+    let finalAvatarUrl: string | null = null;
 
     let discordUsername = "";
 
-    // Determine Sender Name
-    // If in OOC tab, force user identity.
+    // Determine Sender Name & Avatar
     if (isOOC) {
       finalSenderName = userNickname || 'User';
       discordUsername = `${userNickname} (OOC)`;
-    } 
-    // If in Story tab, use selected speakerType state.
-    else if (speakerType === 'gm') {
+      // Could fetch user avatar here if desired
+    } else if (speakerType === 'gm') {
       finalSenderName = 'Narrator';
       msgType = 'narration';
       discordUsername = `Narrator (GM)`;
@@ -1115,6 +1114,7 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
     } else if (speakerType === 'character' && character) {
       finalSenderName = character.name;
       discordUsername = `${character.name} (${userNickname})`;
+      finalAvatarUrl = character.avatarUrl || null;
     }
 
     try {
@@ -1124,12 +1124,12 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
           content: inputValue,
           type: msgType,
           speaker_name: finalSenderName,
-          // avatar_url: finalAvatarUrl
+          avatar_url: finalAvatarUrl
        });
        
        // Send to Discord (Fire & Forget)
        if (campaignData?.discord_webhook_url) {
-          sendToDiscord(campaignData.discord_webhook_url, discordUsername, inputValue);
+          sendToDiscord(campaignData.discord_webhook_url, discordUsername, inputValue, finalAvatarUrl || undefined);
        }
 
        setInputValue("");
@@ -1160,6 +1160,7 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
           content: content,
           type: 'dice',
           speaker_name: character.name,
+          avatar_url: character.avatarUrl,
           dice_result: {
             formula: `${labelKR}(${statName}) 1d100 <= ${target}`,
             ...diceResult
@@ -1169,7 +1170,7 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
        // Send to Discord
        if (campaignData?.discord_webhook_url) {
           const discordContent = `🎲 **[${labelKR} 판정]** 결과: ${getSuccessLevelLabel(diceResult.successLevel || 'Failure')} (${diceResult.total} / ${target})`;
-          sendToDiscord(campaignData.discord_webhook_url, `${character.name} (${userNickname})`, discordContent);
+          sendToDiscord(campaignData.discord_webhook_url, `${character.name} (${userNickname})`, discordContent, character.avatarUrl || undefined);
        }
 
        setDiceModifier(0);
@@ -1191,6 +1192,7 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
           content: content,
           type: 'dice',
           speaker_name: character.name,
+          avatar_url: character.avatarUrl,
           dice_result: {
             formula: `${skillName} 1d100 <= ${skillValue}`,
             ...diceResult
@@ -1200,7 +1202,7 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
        // Send to Discord
        if (campaignData?.discord_webhook_url) {
           const discordContent = `🎲 **[${skillName} 판정]** 결과: ${getSuccessLevelLabel(diceResult.successLevel || 'Failure')} (${diceResult.total} / ${skillValue})`;
-          sendToDiscord(campaignData.discord_webhook_url, `${character.name} (${userNickname})`, discordContent);
+          sendToDiscord(campaignData.discord_webhook_url, `${character.name} (${userNickname})`, discordContent, character.avatarUrl || undefined);
        }
 
        setDiceModifier(0);
@@ -1210,14 +1212,26 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
     }
   };
 
-  const toggleHideMessage = (id: string) => {
+  const toggleHideMessage = async (id: string) => {
     if (!isGM) return;
     const msg = messages.find(m => m.id === id);
     if (!msg) return;
 
-    supabase.from('messages').update({ is_hidden: !msg.isHidden }).eq('id', id).then(({ error }) => {
-       if (error) addToast("상태 변경 실패", "error");
-    });
+    setMessages(prev => prev.map(m => 
+      m.id === id ? { ...m, isHidden: !m.isHidden } : m
+    ));
+
+    const { error } = await supabase
+      .from('messages')
+      .update({ is_hidden: !msg.isHidden })
+      .eq('id', id);
+
+    if (error) {
+       setMessages(prev => prev.map(m => 
+         m.id === id ? { ...m, isHidden: msg.isHidden } : m
+       ));
+       addToast("상태 변경 실패", "error");
+    }
   };
 
   const updateLocationInfo = (field: keyof typeof locationInfo, value: string) => {
@@ -1596,9 +1610,8 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
                               <img src={msg.avatarUrl} alt={msg.senderName} className="w-full h-full object-cover" />
                           </div>
                         ) : (
-                          <div className="w-10 h-10 rounded-full bg-transparent flex items-center justify-center bg-slate-100 dark:bg-zinc-800">
-                             <span className="text-xs font-bold text-slate-400">{msg.senderName?.slice(0,1)}</span>
-                          </div>
+                          // 투명한 스페이서 (이미지 없을 때)
+                          <div className="w-10 h-10 rounded-full flex-shrink-0" /> 
                         )}
                       </div>
                       <div className="flex-1 max-w-3xl min-w-0">
@@ -1934,7 +1947,7 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
                                     onClick={() => handleSkillCheck(name, value)}
                                     className="w-full flex items-center justify-between p-3 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl hover:border-brand-300 hover:shadow-sm transition-all group active:scale-[0.98]"
                                 >
-                                    <span className="font-medium text-slate-700 dark:text-slate-200 group-hover:text-brand-600 dark:group-hover:text-brand-400">{name}</span>
+                                    <span className="font-medium text-slate-700 dark:text-slate-200 group-hover:text-brand-400">{name}</span>
                                     <span className="font-mono font-bold text-slate-500 bg-slate-100 dark:bg-zinc-900 px-2 py-0.5 rounded text-xs">{value}</span>
                                 </button>
                               );

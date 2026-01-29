@@ -1,4 +1,4 @@
--- [Slow ORPG 통합 설치 스크립트]
+-- [Slow ORPG 통합 설치 스크립트 (Final Version)]
 -- 이 코드를 Supabase SQL Editor에 복사하여 붙여넣고 Run 버튼을 누르세요.
 
 -- 1. 유저 프로필 테이블 (가입 시 자동 생성 트리거 포함)
@@ -65,14 +65,14 @@ create table if not exists public.characters (
   name text not null,
   age text,
   occupation text,
-  stats jsonb default '[]'::jsonb, -- STR, CON 등
-  skills jsonb default '{}'::jsonb, -- 관찰력, 듣기 등
-  backstory jsonb default '{}'::jsonb, -- 배경설정
+  stats jsonb default '[]'::jsonb, 
+  skills jsonb default '{}'::jsonb, 
+  backstory jsonb default '{}'::jsonb, 
   avatar_url text,
-  derived jsonb default '{}'::jsonb -- HP, SAN, MP 등 현재 상태
+  derived jsonb default '{}'::jsonb 
 );
 
--- 5. 메시지(채팅) 테이블
+-- 5. 메시지(채팅) 테이블 (avatar_url 포함됨!)
 create table if not exists public.messages (
   id uuid default gen_random_uuid() primary key,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
@@ -83,10 +83,10 @@ create table if not exists public.messages (
   type text default 'talk', -- talk, ooc, narration, dice
   dice_result jsonb,
   is_hidden boolean default false,
-  avatar_url text
+  avatar_url text -- [중요] 이게 있어야 채팅창에 프사가 뜹니다!
 );
 
--- 6. 스토리지 버킷 생성 (이미지 업로드용) - 'images' 버킷이 필요함
+-- 6. 스토리지 버킷 생성 (이미지 업로드용)
 insert into storage.buckets (id, name, public) 
 values ('images', 'images', true)
 on conflict (id) do nothing;
@@ -107,13 +107,14 @@ create trigger on_message_sent
 after insert on public.messages
 for each row execute function public.handle_new_message();
 
--- 8. RLS 정책 (간단하게 모든 인증된 유저 허용)
+-- 8. RLS 정책 (권한 설정)
 alter table public.profiles enable row level security;
 alter table public.campaigns enable row level security;
 alter table public.participants enable row level security;
 alter table public.characters enable row level security;
 alter table public.messages enable row level security;
 
+-- 간단하게 모든 인증된 유저 허용 (친구끼리 쓰는 툴이므로)
 create policy "Enable access for authenticated users" on public.profiles for all using (auth.role() = 'authenticated');
 create policy "Enable access for authenticated users" on public.campaigns for all using (auth.role() = 'authenticated');
 create policy "Enable access for authenticated users" on public.participants for all using (auth.role() = 'authenticated');
