@@ -1063,6 +1063,13 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
     };
   }, [campaignId]);
 
+  // [수정: 자동재생 삭제] URL이 바뀌면 일단 멈춥니다.
+  useEffect(() => {
+    if (bgmUrl) {
+        setIsPlaying(false);
+    }
+  }, [bgmUrl]);
+
   // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
