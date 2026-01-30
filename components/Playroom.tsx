@@ -13,7 +13,7 @@ import {
   Shield, Heart, ChevronLeft, Eye, EyeOff, Edit2, Brain, User,
   Lock, PenTool, Plus, Settings, Download, Copy, Check, HelpCircle,
   AlertCircle, Info, Trash2, ExternalLink,
-  Music, Volume2, VolumeX, Play, Pause, Save // Save 아이콘 추가됨
+  Music, Volume2, VolumeX, Play, Pause, Save, RotateCcw // [추가] 초기화 아이콘
 } from 'lucide-react';
 
 interface PlayroomProps {
@@ -893,6 +893,21 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
     }
   };
 
+  // [New] BGM Reset Handler
+  const handleResetBgm = async () => {
+     console.log("Forcing BGM Reset...");
+     setBgmUrl(null);
+     setTempBgmInput("");
+     setIsPlaying(false);
+     try {
+         await supabase.from('campaigns').update({ bgm_url: null }).eq('id', campaignId);
+         addToast("BGM이 초기화되었습니다.", "success");
+     } catch (err) {
+         console.error("Reset failed", err);
+         addToast("초기화 실패", "error");
+     }
+  };
+
   // 1. Fetch Campaign Info & User Profile & Characters
   useEffect(() => {
     const fetchCampaignData = async () => {
@@ -1068,8 +1083,9 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
     };
   }, [campaignId]);
 
-  // [수정: 자동재생 삭제] URL이 바뀌면 일단 멈춥니다.
+  // [수정: 자동재생 삭제 + 로그]
   useEffect(() => {
+    console.log("Current BGM URL state:", bgmUrl);
     if (bgmUrl) {
         setIsPlaying(false);
     }
@@ -1508,7 +1524,7 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
             {showContent ? (
               <div className="p-5 space-y-6 animate-fadeIn">
                 
-                {/* BGM Control Section (Revised with Save Button & Key Reset) */}
+                {/* BGM Control Section (Revised with Save & Reset Button) */}
                 <div className="p-4 bg-slate-100 dark:bg-zinc-800 rounded-xl border border-slate-200 dark:border-zinc-700 shadow-sm transition-all hover:shadow-md">
                    
                    {/* 상단: 상태 표시 및 URL 입력 */}
@@ -1533,8 +1549,16 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
                                    <button 
                                       onClick={updateBgmUrl}
                                       className="bg-brand-600 text-white p-1 rounded hover:bg-brand-700 transition-colors"
+                                      title="Save BGM URL"
                                    >
                                       <Save size={14} />
+                                   </button>
+                                   <button 
+                                      onClick={handleResetBgm}
+                                      className="bg-rose-500 text-white p-1 rounded hover:bg-rose-600 transition-colors"
+                                      title="Reset/Clear BGM"
+                                   >
+                                      <RotateCcw size={14} />
                                    </button>
                                </div>
                             ) : (
