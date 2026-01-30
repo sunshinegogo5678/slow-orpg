@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, Image as ImageIcon, Users, Loader2, AlertCircle, Link as LinkIcon } from 'lucide-react';
+import { ChevronLeft, Image as ImageIcon, Users, Loader2, AlertCircle, Link as LinkIcon, ExternalLink } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -19,7 +19,8 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({ onCancel, onCreate }) =
     system: 'CoC 7e',
     players: 4,
     description: '',
-    coverImage: '', 
+    coverImage: '',
+    discordWebhook: '', // [수정 1] 웹훅 상태 추가
   });
 
   // Reset image error state when URL changes
@@ -56,6 +57,7 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({ onCancel, onCreate }) =
           gm_id: session.user.id,
           max_players: formData.players,
           cover_image: formData.coverImage || null,
+          discord_webhook_url: formData.discordWebhook || null, // [수정 2] DB에 웹훅 주소 저장
           invite_code: inviteCode
         })
         .select()
@@ -197,6 +199,26 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({ onCancel, onCreate }) =
                     </p>
                  </div>
               </div>
+            </div>
+
+            {/* [수정 3] Discord Webhook Input Added Here */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                디스코드 웹훅 (Optional)
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={formData.discordWebhook}
+                  onChange={(e) => setFormData({...formData, discordWebhook: e.target.value})}
+                  placeholder="https://discord.com/api/webhooks/..."
+                  className="w-full pl-10 pr-4 py-3 rounded-lg bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 focus:outline-none focus:ring-2 focus:ring-brand-600 dark:text-white transition-all text-sm font-mono"
+                />
+                <ExternalLink className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                채팅 로그를 디스코드 채널로 자동 전송하려면 웹훅 URL을 입력하세요.
+              </p>
             </div>
 
             {/* Description */}
