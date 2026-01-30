@@ -13,7 +13,7 @@ import {
   Shield, Heart, ChevronLeft, Eye, EyeOff, Edit2, Brain, User,
   Lock, PenTool, Plus, Settings, Download, Copy, Check, HelpCircle,
   AlertCircle, Info, Trash2, ExternalLink,
-  Music, Volume2, VolumeX, Play, Pause // [추가] 재생/일시정지 아이콘
+  Music, Volume2, VolumeX, Play, Pause 
 } from 'lucide-react';
 
 interface PlayroomProps {
@@ -1058,13 +1058,6 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
     };
   }, [campaignId]);
 
-  // [추가] BGM URL이 변경되면 자동으로 재생 시도 (브라우저 정책에 따라 실패할 수 있음)
-  useEffect(() => {
-    if (bgmUrl) {
-        setIsPlaying(true);
-    }
-  }, [bgmUrl]);
-
   // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -1570,7 +1563,7 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
                       />
                    </div>
 
-                   {/* 숨겨진 플레이어 (유튜브 정책 준수를 위해 크기 0으로 설정하되 display:none은 지양) */}
+                   {/* 숨겨진 플레이어 (안정성 강화 버전) */}
                    <div className="fixed top-0 left-0 w-px h-px opacity-0 pointer-events-none overflow-hidden">
                       <ReactPlayer 
                          url={bgmUrl || undefined}
@@ -1579,14 +1572,24 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
                          volume={isMuted ? 0 : volume}
                          width="100%"
                          height="100%"
-                         playsinline={true} // 모바일 재생 지원
+                         playsinline={true} 
+                         // ▼▼▼ [수정됨] 준비되면 재생하도록 변경 ▼▼▼
+                         onReady={() => {
+                            if (bgmUrl && !isMuted) {
+                               setIsPlaying(true); // 로딩 완료 후 재생 시작
+                            }
+                         }}
+                         // ▲▲▲▲▲▲
                          config={{ 
                             youtube: { playerVars: { playsinline: 1, showinfo: 0, controls: 0, disablekb: 1 } },
-                            file: { forceAudio: true } 
+                            file: { 
+                               forceAudio: true, // [추가] 파일 재생 강제 설정
+                               attributes: { controls: true }
+                            } 
                          }}
                          onError={(e) => {
                             console.error("Playback Error:", e);
-                            setIsPlaying(false); // 에러 시 정지 상태로 변경
+                            setIsPlaying(false);
                             addToast("재생할 수 없는 소스입니다.", "error");
                          }}
                       />
