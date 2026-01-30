@@ -13,7 +13,7 @@ import {
   Shield, Heart, ChevronLeft, Eye, EyeOff, Edit2, Brain, User,
   Lock, PenTool, Plus, Settings, Download, Copy, Check, HelpCircle,
   AlertCircle, Info, Trash2, ExternalLink,
-  Music, Volume2, VolumeX, Play, Pause, Save 
+  Music, Volume2, VolumeX, Play, Pause, Save // Save 아이콘 추가됨
 } from 'lucide-react';
 
 interface PlayroomProps {
@@ -1508,7 +1508,7 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
             {showContent ? (
               <div className="p-5 space-y-6 animate-fadeIn">
                 
-                {/* BGM Control Section (Revised) */}
+                {/* BGM Control Section (Revised with Save Button & Key Reset) */}
                 <div className="p-4 bg-slate-100 dark:bg-zinc-800 rounded-xl border border-slate-200 dark:border-zinc-700 shadow-sm transition-all hover:shadow-md">
                    
                    {/* 상단: 상태 표시 및 URL 입력 */}
@@ -1588,10 +1588,10 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
                       />
                    </div>
 
-                   {/* 숨겨진 플레이어 (유튜브 정책 준수를 위해 크기 0으로 설정하되 display:none은 지양) */}
+                   {/* 숨겨진 플레이어 (key 속성으로 강제 리셋 기능 추가) */}
                    <div className="fixed top-0 left-0 w-px h-px opacity-0 pointer-events-none overflow-hidden">
                       <ReactPlayer 
-                         key={bgmUrl} // [핵심] URL이 바뀌면 컴포넌트 재생성
+                         key={bgmUrl} // [핵심] URL이 바뀌면 컴포넌트를 강제 재생성(Reset)하여 이전 오류 상태 제거
                          url={bgmUrl || undefined}
                          playing={isPlaying}
                          loop={true}
