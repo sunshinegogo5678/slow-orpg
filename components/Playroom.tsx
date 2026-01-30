@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
+import ReactPlayer from 'react-player'; // [추가] BGM 플레이어
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { FULL_COC_SKILL_LIST } from '../constants';
@@ -11,7 +12,8 @@ import {
   ChevronDown, Send, Dices, Menu, X, MapPin, Clock, 
   Shield, Heart, ChevronLeft, Eye, EyeOff, Edit2, Brain, User,
   Lock, PenTool, Plus, Settings, Download, Copy, Check, HelpCircle,
-  AlertCircle, Info, Trash2, ExternalLink
+  AlertCircle, Info, Trash2, ExternalLink,
+  Music, Volume2, VolumeX // [추가] BGM 관련 아이콘
 } from 'lucide-react';
 
 interface PlayroomProps {
@@ -748,6 +750,12 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
   // --- Toasts ---
   const [toasts, setToasts] = useState<Toast[]>([]);
 
+  // BGM State
+  const [bgmUrl, setBgmUrl] = useState<string | null>(null);
+  const [volume, setVolume] = useState(0.5);
+  const [isMuted, setIsMuted] = useState(false);
+  const [showVolume, setShowVolume] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
@@ -866,6 +874,20 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
     }
   };
 
+  const updateBgmUrl = async (url: string) => {
+    // 1. 화면 먼저 갱신
+    setBgmUrl(url);
+    setEditingField(null);
+
+    // 2. DB 업데이트
+    try {
+      await supabase.from('campaigns').update({ bgm_url: url }).eq('id', campaignId);
+    } catch (err) {
+      console.error("BGM Update failed:", err);
+      addToast("BGM 변경 실패", "error");
+    }
+  };
+
   // 1. Fetch Campaign Info & User Profile & Characters
   useEffect(() => {
     const fetchCampaignData = async () => {
@@ -890,6 +912,8 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
              description: cData.scene_description || '아직 설정된 장면이 없습니다.',
            });
            setIsScenarioVisible(cData.is_scene_visible ?? true);
+           // [BGM] 초기 로드
+           setBgmUrl((cData as any).bgm_url || null);
         }
         
         if (profileRes.data) {
@@ -1021,6 +1045,8 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
            setIsScenarioVisible(newC.is_scene_visible ?? true);
            // Also update local campaign data if needed (e.g. webhook url changed by another GM)
            setCampaignData(prev => prev ? ({...prev, ...newC}) : newC);
+           // [BGM] 실시간 업데이트
+           if (newC.bgm_url !== undefined) setBgmUrl(newC.bgm_url);
         }
       )
       .subscribe();
@@ -1463,6 +1489,72 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
           <div className="flex-1 overflow-y-auto relative">
             {showContent ? (
               <div className="p-5 space-y-6 animate-fadeIn">
+                
+                {/* BGM Control Section */}
+                <div className="p-3 bg-slate-100 dark:bg-zinc-800 rounded-xl border border-slate-200 dark:border-zinc-700">
+                   <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                         <Music size={12} /> Background Music
+                      </div>
+                      
+                      {/* 볼륨 컨트롤 */}
+                      <div className="flex items-center gap-2 relative" onMouseEnter={() => setShowVolume(true)} onMouseLeave={() => setShowVolume(false)}>
+                         <button onClick={() => setIsMuted(!isMuted)} className="text-slate-400 hover:text-brand-600 transition-colors">
+                            {isMuted || volume === 0 ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                         </button>
+                         
+                         {/* 볼륨 슬라이더 (호버 시 등장) */}
+                         <div className={`overflow-hidden transition-all duration-300 flex items-center ${showVolume ? 'w-20 opacity-100' : 'w-0 opacity-0'}`}>
+                            <input 
+                              type="range" 
+                              min="0" max="1" step="0.05" 
+                              value={volume}
+                              onChange={(e) => { setVolume(parseFloat(e.target.value)); setIsMuted(false); }}
+                              className="w-20 h-1 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-brand-600"
+                            />
+                         </div>
+                      </div>
+                   </div>
+
+                   {/* GM: URL 입력창 / Player: 노래 제목(또는 주소) 표시 */}
+                   <div className="relative group">
+                      {isGM && editingField === 'bgm' ? (
+                         <input 
+                            autoFocus
+                            className="w-full bg-white dark:bg-zinc-900 border border-brand-500 rounded px-2 py-1 text-xs text-slate-700 dark:text-slate-300 outline-none"
+                            placeholder="MP3 or YouTube URL..."
+                            defaultValue={bgmUrl || ''}
+                            onBlur={(e) => updateBgmUrl(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                         />
+                      ) : (
+                         <div className="flex items-center gap-2 min-h-[20px]">
+                            <p className="text-xs text-slate-600 dark:text-slate-300 truncate font-medium flex-1" title={bgmUrl || ''}>
+                               {bgmUrl ? (bgmUrl.length > 30 ? bgmUrl.substring(0, 30) + '...' : bgmUrl) : 'No Music'}
+                            </p>
+                            {isGM && (
+                               <button onClick={() => setEditingField('bgm')} className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-brand-600">
+                                  <Edit2 size={12} />
+                               </button>
+                            )}
+                         </div>
+                      )}
+                   </div>
+
+                   {/* 숨겨진 React Player (실제 재생 담당) */}
+                   <div className="hidden">
+                      <ReactPlayer 
+                         url={bgmUrl || undefined}
+                         playing={!isMuted && !!bgmUrl} // 뮤트가 아니고 URL이 있을 때 재생
+                         loop={true}
+                         volume={volume}
+                         width="0"
+                         height="0"
+                         config={{ youtube: { playerVars: { showinfo: 0 } } }}
+                      />
+                   </div>
+                </div>
+
                 <div className="space-y-4">
                   <div className="group relative">
                     <h2 className="text-xs uppercase tracking-wider font-bold text-brand-600 dark:text-brand-400 mb-1">Current Chapter</h2>
@@ -1695,7 +1787,7 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
                         className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors border border-transparent 
                           ${activeTab === 'ooc' 
                               ? 'bg-slate-100 dark:bg-zinc-800 text-slate-500 cursor-not-allowed' 
-                              : 'bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-zinc-700 focus:ring-2 focus:ring-brand-600/20 cursor-pointer'
+                              : 'bg-slate-100 dark:bg-zinc-900 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-zinc-700 focus:ring-2 focus:ring-brand-600/20 cursor-pointer'
                           }`}
                       >
                           <span className={speakerType === 'gm' ? 'text-brand-600 dark:text-brand-400' : ''}>

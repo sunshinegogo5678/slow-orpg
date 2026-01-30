@@ -16,6 +16,7 @@ export type Campaign = {
   invite_code: string; // New field for access control
   member_count: number; // calculated or fetched field
   discord_webhook_url?: string; // Added for Discord integration
+  bgm_url?: string; // [추가됨] BGM URL support
   last_active_at?: string; // Added field for sorting by activity
   
   // Scene / Scenario Management Fields
