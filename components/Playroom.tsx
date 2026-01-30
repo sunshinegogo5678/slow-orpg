@@ -1524,230 +1524,143 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
               <div className="p-5 space-y-6 animate-fadeIn">
                 
                 {/* BGM Control Section (Revised with Save & Reset Button) */}
-     <div className="p-4 bg-slate-100 dark:bg-zinc-800 rounded-xl border border-slate-200 dark:border-zinc-700 shadow-sm transition-all hover:shadow-md">
-    
-    {/* 상단: 상태 표시 및 URL 입력 */}
-    <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2 overflow-hidden w-full">
-            <div className={`p-1.5 rounded-full flex-shrink-0 ${isPlaying ? 'bg-brand-100 text-brand-600 animate-pulse' : 'bg-slate-200 text-slate-400'}`}>
-                <Music size={14} />
-            </div>
-            
-            <div className="flex-1 min-w-0">
-                {/* 라벨 & 초기화 버튼 줄 */}
-                <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Background Music</p>
-                    {/* [핵심 변경] GM이면 항상 보이는 강제 초기화 버튼 */}
-                    {isGM && (
-                        <button 
-                            onClick={(e) => {
-                                e.stopPropagation(); // 부모의 클릭 이벤트(수정 모드 진입) 방지
-                                handleResetBgm();
-                            }}
-                            className="text-[10px] bg-rose-100 text-rose-600 px-1.5 py-0.5 rounded hover:bg-rose-200 transition-colors flex items-center gap-1 mb-0.5"
-                            title="BGM 강제 초기화 (멈춤)"
-                        >
-                            <RotateCcw size={10} /> Reset
-                        </button>
-                    )}
-                </div>
+{/* ▼▼▼ BGM 섹션 시작 (여기서부터 복사하세요) ▼▼▼ */}
+                <div className="p-4 bg-slate-100 dark:bg-zinc-800 rounded-xl border border-slate-200 dark:border-zinc-700 shadow-sm transition-all hover:shadow-md">
+                   
+                   {/* 상단: 상태 표시 및 URL 입력 */}
+                   <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2 overflow-hidden w-full">
+                         <div className={`p-1.5 rounded-full flex-shrink-0 ${isPlaying ? 'bg-brand-100 text-brand-600 animate-pulse' : 'bg-slate-200 text-slate-400'}`}>
+                            <Music size={14} />
+                         </div>
+                         <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Background Music</p>
+                                {/* GM: 강제 초기화 버튼 */}
+                                {isGM && (
+                                    <button 
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleResetBgm();
+                                        }}
+                                        className="text-[10px] bg-rose-100 text-rose-600 px-1.5 py-0.5 rounded hover:bg-rose-200 transition-colors flex items-center gap-1 mb-0.5"
+                                        title="BGM 강제 초기화"
+                                    >
+                                        <RotateCcw size={10} /> Reset
+                                    </button>
+                                )}
+                            </div>
 
-                {/* GM: URL 입력 모드 / Player: 상태 텍스트 */}
-                {isGM && editingField === 'bgm' ? (
-                    <div className="flex gap-2 mt-1">
-                        <input 
-                            autoFocus
-                            className="flex-1 bg-white dark:bg-zinc-900 border border-brand-500 rounded px-1.5 py-0.5 text-xs text-slate-700 dark:text-slate-300 outline-none"
-                            placeholder="URL..."
-                            value={tempBgmInput}
-                            onChange={(e) => setTempBgmInput(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && updateBgmUrl()}
-                        />
-                        <button 
-                            onClick={updateBgmUrl}
-                            className="bg-brand-600 text-white p-1 rounded hover:bg-brand-700 transition-colors"
-                            title="저장"
-                        >
-                            <Save size={14} />
-                        </button>
-                        <button 
-                            onClick={() => setEditingField(null)}
-                            className="bg-slate-300 text-slate-600 p-1 rounded hover:bg-slate-400 transition-colors"
-                            title="취소"
-                        >
-                            <X size={14} />
-                        </button>
-                    </div>
-                ) : (
-                    <div 
-                        className="flex items-center gap-1 group cursor-pointer mt-0.5" 
-                        onClick={() => { if(isGM) { setEditingField('bgm'); setTempBgmInput(bgmUrl || ''); } }}
-                    >
-                        <p className={`text-xs font-medium truncate ${isPlaying ? 'text-brand-600 dark:text-brand-400' : 'text-slate-500'}`}>
-                            {bgmUrl ? (isPlaying ? 'Now Playing ♪' : 'Paused (Click to Edit)') : 'No Music Selected'}
-                        </p>
-                        {isGM && <Edit2 size={10} className="opacity-0 group-hover:opacity-100 text-slate-400" />}
-                    </div>
-                )}
-            </div>
-        </div>
-    </div>
+                            {/* GM: URL 입력 / Player: 상태 텍스트 */}
+                            {isGM && editingField === 'bgm' ? (
+                               <div className="flex gap-2 mt-1">
+                                   <input 
+                                      autoFocus
+                                      className="flex-1 bg-white dark:bg-zinc-900 border border-brand-500 rounded px-1.5 py-0.5 text-xs text-slate-700 dark:text-slate-300 outline-none"
+                                      placeholder="YouTube / MP3 URL..."
+                                      value={tempBgmInput}
+                                      onChange={(e) => setTempBgmInput(e.target.value)}
+                                      onKeyDown={(e) => e.key === 'Enter' && updateBgmUrl()}
+                                   />
+                                   <button 
+                                      onClick={updateBgmUrl}
+                                      className="bg-brand-600 text-white p-1 rounded hover:bg-brand-700 transition-colors"
+                                   >
+                                      <Save size={14} />
+                                   </button>
+                                   <button 
+                                      onClick={() => setEditingField(null)}
+                                      className="bg-slate-300 text-slate-600 p-1 rounded hover:bg-slate-400 transition-colors"
+                                   >
+                                      <X size={14} />
+                                   </button>
+                               </div>
+                            ) : (
+                               <div className="flex items-center gap-1 group cursor-pointer mt-0.5" onClick={() => { if(isGM) { setEditingField('bgm'); setTempBgmInput(bgmUrl || ''); } }}>
+                                  <p className={`text-xs font-medium truncate ${isPlaying ? 'text-brand-600 dark:text-brand-400' : 'text-slate-500'}`}>
+                                     {bgmUrl ? (isPlaying ? 'Now Playing ♪' : 'Paused (Click to Edit)') : 'No Music Selected'}
+                                  </p>
+                                  {isGM && <Edit2 size={10} className="opacity-0 group-hover:opacity-100 text-slate-400" />}
+                               </div>
+                            )}
+                         </div>
+                      </div>
+                   </div>
 
-    {/* 하단: 컨트롤러 (재생/정지 + 볼륨) */}
-    <div className="flex items-center gap-2 bg-white dark:bg-zinc-900/50 p-2 rounded-lg border border-slate-100 dark:border-zinc-700/50">
-        {/* 1. 재생/일시정지 버튼 */}
-        <button 
-            onClick={() => setIsPlaying(!isPlaying)}
-            disabled={!bgmUrl}
-            className={`p-2 rounded-full transition-all ${
-                !bgmUrl ? 'text-slate-300 cursor-not-allowed' : 
-                isPlaying 
-                    ? 'bg-brand-50 text-brand-600 hover:bg-brand-100' 
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-zinc-800 dark:text-slate-300'
-            }`}
-            title={isPlaying ? "일시정지" : "재생"}
-        >
-            {isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" className="ml-0.5" />}
-        </button>
+                   {/* 하단: 컨트롤러 (재생/정지 + 볼륨) */}
+                   <div className="flex items-center gap-2 bg-white dark:bg-zinc-900/50 p-2 rounded-lg border border-slate-100 dark:border-zinc-700/50">
+                      
+                      {/* 1. 재생/일시정지 버튼 */}
+                      <button 
+                        onClick={() => setIsPlaying(!isPlaying)}
+                        disabled={!bgmUrl}
+                        className={`p-2 rounded-full transition-all ${
+                           !bgmUrl ? 'text-slate-300 cursor-not-allowed' : 
+                           isPlaying 
+                             ? 'bg-brand-50 text-brand-600 hover:bg-brand-100' 
+                             : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-zinc-800 dark:text-slate-300'
+                        }`}
+                        title={isPlaying ? "일시정지" : "재생"}
+                      >
+                         {isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" className="ml-0.5" />}
+                      </button>
 
-        {/* 구분선 */}
-        <div className="w-px h-6 bg-slate-200 dark:bg-zinc-700 mx-1"></div>
+                      {/* 구분선 */}
+                      <div className="w-px h-6 bg-slate-200 dark:bg-zinc-700 mx-1"></div>
 
-        {/* 2. 볼륨 아이콘 */}
-        <button 
-            onClick={() => setIsMuted(!isMuted)} 
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1"
-        >
-            {isMuted || volume === 0 ? <VolumeX size={16} /> : <Volume2 size={16} />}
-        </button>
+                      {/* 2. 볼륨 아이콘 */}
+                      <button 
+                        onClick={() => setIsMuted(!isMuted)} 
+                        className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1"
+                      >
+                         {isMuted || volume === 0 ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                      </button>
 
-        {/* 3. 볼륨 슬라이더 */}
-        <input 
-            type="range" 
-            min="0" max="1" step="0.05" 
-            value={isMuted ? 0 : volume}
-            onChange={(e) => { setVolume(parseFloat(e.target.value)); setIsMuted(false); }}
-            className="flex-1 h-1.5 bg-slate-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-brand-600 hover:accent-brand-500"
-        />
-    </div>
-
-    {/* 숨겨진 플레이어 (key 속성으로 강제 리셋 기능 추가) */}
-{/* 숨겨진 플레이어 (수정됨: 1px 픽셀 대신 화면 밖으로 보내서 크기 확보) */}
-                    <div style={{ position: 'fixed', top: '-9999px', left: '-9999px' }}>
-                        <ReactPlayer 
-                            key={bgmUrl} 
-                            url={bgmUrl || undefined}
-                            playing={isPlaying}
-                            loop={true}
-                            volume={isMuted ? 0 : volume}
-                            width="640px"  // [중요] 유튜브/브라우저가 인식할 수 있는 충분한 크기
-                            height="360px" 
-                            playsinline={true} 
-                            config={{ 
-                                youtube: { 
-                                    playerVars: { 
-                                        playsinline: 1, 
-                                        showinfo: 0, 
-                                        controls: 0, 
-                                        disablekb: 1,
-                                        origin: window.location.origin // [추가] 보안 정책 준수
-                                    } 
-                                },
-                                file: { 
-                                    forceAudio: true, 
-                                    attributes: { 
-                                        controls: true,
-                                        crossOrigin: "anonymous" // [추가] CORS 문제 완화 시도
-                                    } 
-                                } 
-                            }}
-                            onError={(e) => {
-                                console.error("Playback Error:", e);
-                                setIsPlaying(false);
-                                addToast("재생할 수 없는 소스입니다 (링크 만료 또는 차단됨).", "error");
-                            }}
-                        />
-                    </div>
-
-                <div className="space-y-4">
-                  <div className="group relative">
-                    <h2 className="text-xs uppercase tracking-wider font-bold text-brand-600 dark:text-brand-400 mb-1">Current Chapter</h2>
-                    {isGM && editingField === 'chapter' ? (
+                      {/* 3. 볼륨 슬라이더 */}
                       <input 
-                        autoFocus
-                        className="w-full bg-slate-100 dark:bg-zinc-800 p-1 rounded font-serif text-lg font-medium"
-                        defaultValue={locationInfo.chapter}
-                        onBlur={(e) => updateLocationInfo('chapter', e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                        type="range" 
+                        min="0" max="1" step="0.05" 
+                        value={isMuted ? 0 : volume}
+                        onChange={(e) => { setVolume(parseFloat(e.target.value)); setIsMuted(false); }}
+                        className="flex-1 h-1.5 bg-slate-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-brand-600 hover:accent-brand-500"
                       />
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <p className="font-serif text-xl font-medium leading-tight text-slate-900 dark:text-white">{locationInfo.chapter}</p>
-                        {isGM && <Edit2 size={12} className="opacity-0 group-hover:opacity-100 cursor-pointer text-slate-400" onClick={() => setEditingField('chapter')} />}
-                      </div>
-                    )}
-                  </div>
+                   </div>
 
-                  <div className="space-y-3">
-                      <div className="group relative">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-slate-400" />
-                          <span className="text-xs font-semibold text-slate-500">Location</span>
-                          {isGM && editingField !== 'location' && <Edit2 size={10} className="opacity-0 group-hover:opacity-100 cursor-pointer text-slate-400" onClick={() => setEditingField('location')} />}
-                        </div>
-                        {isGM && editingField === 'location' ? (
-                          <input 
-                              autoFocus
-                              className="w-full mt-1 bg-slate-100 dark:bg-zinc-800 p-1 rounded text-sm"
-                              defaultValue={locationInfo.location}
-                              onBlur={(e) => updateLocationInfo('location', e.target.value)}
-                              onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
-                          />
-                        ) : (
-                          <p className="text-sm text-slate-700 dark:text-slate-300 mt-0.5">{locationInfo.location}</p>
-                        )}
-                      </div>
-
-                      <div className="group relative">
-                        <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4 text-slate-400" />
-                          <span className="text-xs font-semibold text-slate-500">Time</span>
-                          {isGM && editingField !== 'time' && <Edit2 size={10} className="opacity-0 group-hover:opacity-100 cursor-pointer text-slate-400" onClick={() => setEditingField('time')} />}
-                        </div>
-                        {isGM && editingField === 'time' ? (
-                          <input 
-                              autoFocus
-                              className="w-full mt-1 bg-slate-100 dark:bg-zinc-800 p-1 rounded text-sm"
-                              defaultValue={locationInfo.time}
-                              onBlur={(e) => updateLocationInfo('time', e.target.value)}
-                              onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
-                          />
-                        ) : (
-                          <p className="text-sm text-slate-700 dark:text-slate-300 mt-0.5">{locationInfo.time}</p>
-                        )}
-                      </div>
-                  </div>
+                   {/* 숨겨진 플레이어 (화면 밖으로 보내서 브라우저 정책 회피) */}
+                   <div style={{ position: 'fixed', top: '-9999px', left: '-9999px' }}>
+                      <ReactPlayer 
+                         key={bgmUrl} 
+                         url={bgmUrl || undefined}
+                         playing={isPlaying}
+                         loop={true}
+                         volume={isMuted ? 0 : volume}
+                         width="640px"
+                         height="360px"
+                         playsinline={true} 
+                         config={{ 
+                            youtube: { 
+                                playerVars: { 
+                                    playsinline: 1, 
+                                    showinfo: 0, 
+                                    controls: 0, 
+                                    disablekb: 1,
+                                    origin: typeof window !== 'undefined' ? window.location.origin : undefined
+                                } 
+                            },
+                            file: { 
+                               forceAudio: true, 
+                               attributes: { controls: true, crossOrigin: "anonymous" }
+                            } 
+                         }}
+                         onError={(e) => {
+                            console.error("Playback Error:", e);
+                            setIsPlaying(false);
+                            addToast("재생할 수 없는 소스입니다 (CORS/만료됨).", "error");
+                         }}
+                      />
+                   </div>
                 </div>
-
-                <div className="relative group">
-                  <p className="text-xs font-medium text-slate-400 mb-2 uppercase">Scene Description</p>
-                  {isGM && editingField === 'description' ? (
-                    <textarea 
-                        autoFocus
-                        className="w-full h-48 bg-white dark:bg-zinc-900 p-2 rounded text-sm leading-relaxed border border-brand-500 focus:outline-none"
-                        defaultValue={locationInfo.description}
-                        onBlur={(e) => updateLocationInfo('description', e.target.value)}
-                    />
-                  ) : (
-                    <>
-                      <p className="text-sm italic text-slate-600 dark:text-slate-300 leading-relaxed font-serif whitespace-pre-wrap">
-                        "{locationInfo.description}"
-                      </p>
-                      {isGM && <button onClick={() => setEditingField('description')} className="absolute top-0 right-0 p-1 text-slate-400 hover:text-brand-600 opacity-0 group-hover:opacity-100 transition-opacity"><Edit2 size={12} /></button>}
-                    </>
-                  )}
-                </div>
-              </div>
+                {/* ▲▲▲ BGM 섹션 끝 ▲▲▲ */}
             ) : (
               <LockedScenarioView />
             )}
