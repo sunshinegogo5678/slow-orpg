@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
-import ReactPlayer from 'react-player'; // [추가] BGM 플레이어
+import ReactPlayer from 'react-player'; // BGM 플레이어
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { FULL_COC_SKILL_LIST } from '../constants';
@@ -13,7 +13,7 @@ import {
   Shield, Heart, ChevronLeft, Eye, EyeOff, Edit2, Brain, User,
   Lock, PenTool, Plus, Settings, Download, Copy, Check, HelpCircle,
   AlertCircle, Info, Trash2, ExternalLink,
-  Music, Volume2, VolumeX // [추가] BGM 관련 아이콘
+  Music, Volume2, VolumeX, Play, Pause // [추가] 재생/일시정지 아이콘
 } from 'lucide-react';
 
 interface PlayroomProps {
@@ -752,6 +752,7 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
 
   // BGM State
   const [bgmUrl, setBgmUrl] = useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false); // [추가] 재생 여부
   const [volume, setVolume] = useState(0.5);
   const [isMuted, setIsMuted] = useState(false);
   const [showVolume, setShowVolume] = useState(false);
@@ -1056,6 +1057,13 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
       supabase.removeChannel(campaignChannel);
     };
   }, [campaignId]);
+
+  // [추가] BGM URL이 변경되면 자동으로 재생 시도 (브라우저 정책에 따라 실패할 수 있음)
+  useEffect(() => {
+    if (bgmUrl) {
+        setIsPlaying(true);
+    }
+  }, [bgmUrl]);
 
   // Auto-scroll
   useEffect(() => {
@@ -1490,67 +1498,97 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
             {showContent ? (
               <div className="p-5 space-y-6 animate-fadeIn">
                 
-                {/* BGM Control Section */}
-                <div className="p-3 bg-slate-100 dark:bg-zinc-800 rounded-xl border border-slate-200 dark:border-zinc-700">
-                   <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                         <Music size={12} /> Background Music
-                      </div>
-                      
-                      {/* 볼륨 컨트롤 */}
-                      <div className="flex items-center gap-2 relative" onMouseEnter={() => setShowVolume(true)} onMouseLeave={() => setShowVolume(false)}>
-                         <button onClick={() => setIsMuted(!isMuted)} className="text-slate-400 hover:text-brand-600 transition-colors">
-                            {isMuted || volume === 0 ? <VolumeX size={14} /> : <Volume2 size={14} />}
-                         </button>
-                         
-                         {/* 볼륨 슬라이더 (호버 시 등장) */}
-                         <div className={`overflow-hidden transition-all duration-300 flex items-center ${showVolume ? 'w-20 opacity-100' : 'w-0 opacity-0'}`}>
-                            <input 
-                              type="range" 
-                              min="0" max="1" step="0.05" 
-                              value={volume}
-                              onChange={(e) => { setVolume(parseFloat(e.target.value)); setIsMuted(false); }}
-                              className="w-20 h-1 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-brand-600"
-                            />
+                {/* BGM Control Section (Revised) */}
+                <div className="p-4 bg-slate-100 dark:bg-zinc-800 rounded-xl border border-slate-200 dark:border-zinc-700 shadow-sm transition-all hover:shadow-md">
+                   
+                   {/* 상단: 상태 표시 및 URL 입력 */}
+                   <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2 overflow-hidden">
+                         <div className={`p-1.5 rounded-full ${isPlaying ? 'bg-brand-100 text-brand-600 animate-pulse' : 'bg-slate-200 text-slate-400'}`}>
+                            <Music size={14} />
                          </div>
-                      </div>
-                   </div>
-
-                   {/* GM: URL 입력창 / Player: 노래 제목(또는 주소) 표시 */}
-                   <div className="relative group">
-                      {isGM && editingField === 'bgm' ? (
-                         <input 
-                            autoFocus
-                            className="w-full bg-white dark:bg-zinc-900 border border-brand-500 rounded px-2 py-1 text-xs text-slate-700 dark:text-slate-300 outline-none"
-                            placeholder="MP3 or YouTube URL..."
-                            defaultValue={bgmUrl || ''}
-                            onBlur={(e) => updateBgmUrl(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
-                         />
-                      ) : (
-                         <div className="flex items-center gap-2 min-h-[20px]">
-                            <p className="text-xs text-slate-600 dark:text-slate-300 truncate font-medium flex-1" title={bgmUrl || ''}>
-                               {bgmUrl ? (bgmUrl.length > 30 ? bgmUrl.substring(0, 30) + '...' : bgmUrl) : 'No Music'}
-                            </p>
-                            {isGM && (
-                               <button onClick={() => setEditingField('bgm')} className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-brand-600">
-                                  <Edit2 size={12} />
-                               </button>
+                         <div className="flex-1 min-w-0">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Background Music</p>
+                            {/* GM: URL 입력 / Player: 상태 텍스트 */}
+                            {isGM && editingField === 'bgm' ? (
+                               <input 
+                                  autoFocus
+                                  className="w-full bg-white dark:bg-zinc-900 border border-brand-500 rounded px-1.5 py-0.5 text-xs text-slate-700 dark:text-slate-300 outline-none"
+                                  placeholder="YouTube / MP3 URL..."
+                                  defaultValue={bgmUrl || ''}
+                                  onBlur={(e) => updateBgmUrl(e.target.value)}
+                                  onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                               />
+                            ) : (
+                               <div className="flex items-center gap-1 group cursor-pointer" onClick={() => isGM && setEditingField('bgm')}>
+                                  <p className={`text-xs font-medium truncate max-w-[140px] ${isPlaying ? 'text-brand-600 dark:text-brand-400' : 'text-slate-500'}`}>
+                                     {bgmUrl ? (isPlaying ? 'Now Playing ♪' : 'Paused') : 'No Music Selected'}
+                                  </p>
+                                  {isGM && <Edit2 size={10} className="opacity-0 group-hover:opacity-100 text-slate-400" />}
+                               </div>
                             )}
                          </div>
-                      )}
+                      </div>
                    </div>
 
-                   {/* 숨겨진 React Player (실제 재생 담당) */}
-                   <div className="hidden">
+                   {/* 하단: 컨트롤러 (재생/정지 + 볼륨) */}
+                   <div className="flex items-center gap-2 bg-white dark:bg-zinc-900/50 p-2 rounded-lg border border-slate-100 dark:border-zinc-700/50">
+                      
+                      {/* 1. 재생/일시정지 버튼 */}
+                      <button 
+                        onClick={() => setIsPlaying(!isPlaying)}
+                        disabled={!bgmUrl}
+                        className={`p-2 rounded-full transition-all ${
+                           !bgmUrl ? 'text-slate-300 cursor-not-allowed' : 
+                           isPlaying 
+                             ? 'bg-brand-50 text-brand-600 hover:bg-brand-100' 
+                             : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-zinc-800 dark:text-slate-300'
+                        }`}
+                        title={isPlaying ? "일시정지" : "재생"}
+                      >
+                         {isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" className="ml-0.5" />}
+                      </button>
+
+                      {/* 구분선 */}
+                      <div className="w-px h-6 bg-slate-200 dark:bg-zinc-700 mx-1"></div>
+
+                      {/* 2. 볼륨 아이콘 */}
+                      <button 
+                        onClick={() => setIsMuted(!isMuted)} 
+                        className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1"
+                      >
+                         {isMuted || volume === 0 ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                      </button>
+
+                      {/* 3. 볼륨 슬라이더 */}
+                      <input 
+                        type="range" 
+                        min="0" max="1" step="0.05" 
+                        value={isMuted ? 0 : volume}
+                        onChange={(e) => { setVolume(parseFloat(e.target.value)); setIsMuted(false); }}
+                        className="flex-1 h-1.5 bg-slate-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-brand-600 hover:accent-brand-500"
+                      />
+                   </div>
+
+                   {/* 숨겨진 플레이어 (유튜브 정책 준수를 위해 크기 0으로 설정하되 display:none은 지양) */}
+                   <div className="fixed top-0 left-0 w-px h-px opacity-0 pointer-events-none overflow-hidden">
                       <ReactPlayer 
                          url={bgmUrl || undefined}
-                         playing={!isMuted && !!bgmUrl} // 뮤트가 아니고 URL이 있을 때 재생
+                         playing={isPlaying}
                          loop={true}
-                         volume={volume}
-                         width="0"
-                         height="0"
-                         config={{ youtube: { playerVars: { showinfo: 0 } } }}
+                         volume={isMuted ? 0 : volume}
+                         width="100%"
+                         height="100%"
+                         playsinline={true} // 모바일 재생 지원
+                         config={{ 
+                            youtube: { playerVars: { playsinline: 1, showinfo: 0, controls: 0, disablekb: 1 } },
+                            file: { forceAudio: true } 
+                         }}
+                         onError={(e) => {
+                            console.error("Playback Error:", e);
+                            setIsPlaying(false); // 에러 시 정지 상태로 변경
+                            addToast("재생할 수 없는 소스입니다.", "error");
+                         }}
                       />
                    </div>
                 </div>
