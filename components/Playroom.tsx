@@ -13,7 +13,7 @@ import {
   Shield, Heart, ChevronLeft, Eye, EyeOff, Edit2, Brain, User,
   Lock, PenTool, Plus, Settings, Download, Copy, Check, HelpCircle,
   AlertCircle, Info, Trash2, ExternalLink,
-  Music, Volume2, VolumeX, Play, Pause, Save, RotateCcw // [확인] RotateCcw 추가됨
+  Music, Volume2, VolumeX, Play, Pause, Save, RotateCcw 
 } from 'lucide-react';
 
 interface PlayroomProps {
@@ -1523,8 +1523,7 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
             {showContent ? (
               <div className="p-5 space-y-6 animate-fadeIn">
                 
-                {/* BGM Control Section (Revised with Save & Reset Button) */}
-{/* ▼▼▼ BGM 섹션 시작 (여기서부터 복사하세요) ▼▼▼ */}
+                {/* ▼▼▼ BGM Control Section (FIXED) ▼▼▼ */}
                 <div className="p-4 bg-slate-100 dark:bg-zinc-800 rounded-xl border border-slate-200 dark:border-zinc-700 shadow-sm transition-all hover:shadow-md">
                    
                    {/* 상단: 상태 표시 및 URL 입력 */}
@@ -1626,7 +1625,7 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
                       />
                    </div>
 
-                   {/* 숨겨진 플레이어 (화면 밖으로 보내서 브라우저 정책 회피) */}
+                   {/* 숨겨진 플레이어 (화면 밖으로 보내서 브라우저 정책 회피 + 1px 문제 해결) */}
                    <div style={{ position: 'fixed', top: '-9999px', left: '-9999px' }}>
                       <ReactPlayer 
                          key={bgmUrl} 
@@ -1660,7 +1659,86 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
                       />
                    </div>
                 </div>
-                {/* ▲▲▲ BGM 섹션 끝 ▲▲▲ */}
+
+                <div className="space-y-4">
+                  <div className="group relative">
+                    <h2 className="text-xs uppercase tracking-wider font-bold text-brand-600 dark:text-brand-400 mb-1">Current Chapter</h2>
+                    {isGM && editingField === 'chapter' ? (
+                      <input 
+                        autoFocus
+                        className="w-full bg-slate-100 dark:bg-zinc-800 p-1 rounded font-serif text-lg font-medium"
+                        defaultValue={locationInfo.chapter}
+                        onBlur={(e) => updateLocationInfo('chapter', e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                      />
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <p className="font-serif text-xl font-medium leading-tight text-slate-900 dark:text-white">{locationInfo.chapter}</p>
+                        {isGM && <Edit2 size={12} className="opacity-0 group-hover:opacity-100 cursor-pointer text-slate-400" onClick={() => setEditingField('chapter')} />}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-3">
+                      <div className="group relative">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4 text-slate-400" />
+                          <span className="text-xs font-semibold text-slate-500">Location</span>
+                          {isGM && editingField !== 'location' && <Edit2 size={10} className="opacity-0 group-hover:opacity-100 cursor-pointer text-slate-400" onClick={() => setEditingField('location')} />}
+                        </div>
+                        {isGM && editingField === 'location' ? (
+                          <input 
+                              autoFocus
+                              className="w-full mt-1 bg-slate-100 dark:bg-zinc-800 p-1 rounded text-sm"
+                              defaultValue={locationInfo.location}
+                              onBlur={(e) => updateLocationInfo('location', e.target.value)}
+                              onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                          />
+                        ) : (
+                          <p className="text-sm text-slate-700 dark:text-slate-300 mt-0.5">{locationInfo.location}</p>
+                        )}
+                      </div>
+
+                      <div className="group relative">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-slate-400" />
+                          <span className="text-xs font-semibold text-slate-500">Time</span>
+                          {isGM && editingField !== 'time' && <Edit2 size={10} className="opacity-0 group-hover:opacity-100 cursor-pointer text-slate-400" onClick={() => setEditingField('time')} />}
+                        </div>
+                        {isGM && editingField === 'time' ? (
+                          <input 
+                              autoFocus
+                              className="w-full mt-1 bg-slate-100 dark:bg-zinc-800 p-1 rounded text-sm"
+                              defaultValue={locationInfo.time}
+                              onBlur={(e) => updateLocationInfo('time', e.target.value)}
+                              onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                          />
+                        ) : (
+                          <p className="text-sm text-slate-700 dark:text-slate-300 mt-0.5">{locationInfo.time}</p>
+                        )}
+                      </div>
+                  </div>
+                </div>
+
+                <div className="relative group">
+                  <p className="text-xs font-medium text-slate-400 mb-2 uppercase">Scene Description</p>
+                  {isGM && editingField === 'description' ? (
+                    <textarea 
+                        autoFocus
+                        className="w-full h-48 bg-white dark:bg-zinc-900 p-2 rounded text-sm leading-relaxed border border-brand-500 focus:outline-none"
+                        defaultValue={locationInfo.description}
+                        onBlur={(e) => updateLocationInfo('description', e.target.value)}
+                    />
+                  ) : (
+                    <>
+                      <p className="text-sm italic text-slate-600 dark:text-slate-300 leading-relaxed font-serif whitespace-pre-wrap">
+                        "{locationInfo.description}"
+                      </p>
+                      {isGM && <button onClick={() => setEditingField('description')} className="absolute top-0 right-0 p-1 text-slate-400 hover:text-brand-600 opacity-0 group-hover:opacity-100 transition-opacity"><Edit2 size={12} /></button>}
+                    </>
+                  )}
+                </div>
+              </div>
             ) : (
               <LockedScenarioView />
             )}
@@ -2100,11 +2178,12 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
             onClick={() => setMobileMenuOpen(false)}
         ></div>
       )}
-      {/* ▼▼▼ [배포 확인용 코드 삽입] ▼▼▼ */}
+
+      {/* 배포 확인용 코드 삽입 */}
       <div className="fixed bottom-2 right-2 z-[9999] bg-red-600 text-white px-3 py-1 text-sm font-bold rounded shadow-lg pointer-events-none animate-bounce">
         🚀 DEPLOY TEST 2026-01-30 (BGM Fix)
       </div>
-      {/* ▲▲▲ [배포 확인용 코드 삽입] ▲▲▲ */}
+
     </div>
   );
 };
