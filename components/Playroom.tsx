@@ -2156,6 +2156,11 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
             onClick={() => setMobileMenuOpen(false)}
         ></div>
       )}
+      {/* ▼▼▼ [배포 확인용 코드 삽입] ▼▼▼ */}
+      <div className="fixed bottom-2 right-2 z-[9999] bg-red-600 text-white px-3 py-1 text-sm font-bold rounded shadow-lg pointer-events-none animate-bounce">
+        🚀 DEPLOY TEST 2026-01-30 (BGM Fix)
+      </div>
+      {/* ▲▲▲ [배포 확인용 코드 삽입] ▲▲▲ */}
     </div>
   );
 };
