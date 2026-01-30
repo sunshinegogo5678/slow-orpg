@@ -1047,7 +1047,11 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
            // Also update local campaign data if needed (e.g. webhook url changed by another GM)
            setCampaignData(prev => prev ? ({...prev, ...newC}) : newC);
            // [BGM] 실시간 업데이트
-           if (newC.bgm_url !== undefined) setBgmUrl(newC.bgm_url);
+           if (newC.bgm_url !== undefined) {
+              setBgmUrl(newC.bgm_url);
+              // [안전장치] 새 URL이 들어오면 일단 재생을 멈춤 (사용자가 재생 누르게 유도)
+              setIsPlaying(false);
+           }
         }
       )
       .subscribe();
@@ -1563,7 +1567,7 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
                       />
                    </div>
 
-                   {/* 숨겨진 플레이어 (안정성 강화 버전) */}
+                   {/* 숨겨진 플레이어 (유튜브 정책 준수를 위해 크기 0으로 설정하되 display:none은 지양) */}
                    <div className="fixed top-0 left-0 w-px h-px opacity-0 pointer-events-none overflow-hidden">
                       <ReactPlayer 
                          url={bgmUrl || undefined}
@@ -1573,17 +1577,10 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
                          width="100%"
                          height="100%"
                          playsinline={true} 
-                         // ▼▼▼ [수정됨] 준비되면 재생하도록 변경 ▼▼▼
-                         onReady={() => {
-                            if (bgmUrl && !isMuted) {
-                               setIsPlaying(true); // 로딩 완료 후 재생 시작
-                            }
-                         }}
-                         // ▲▲▲▲▲▲
                          config={{ 
                             youtube: { playerVars: { playsinline: 1, showinfo: 0, controls: 0, disablekb: 1 } },
                             file: { 
-                               forceAudio: true, // [추가] 파일 재생 강제 설정
+                               forceAudio: true, // 파일 재생 강제 설정
                                attributes: { controls: true }
                             } 
                          }}
