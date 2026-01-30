@@ -1632,31 +1632,42 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
     </div>
 
     {/* 숨겨진 플레이어 (key 속성으로 강제 리셋 기능 추가) */}
-    <div className="fixed top-0 left-0 w-px h-px opacity-0 pointer-events-none overflow-hidden">
-        <ReactPlayer 
-            key={bgmUrl} // [핵심] URL이 바뀌면 컴포넌트를 강제 재생성(Reset)하여 이전 오류 상태 제거
-            url={bgmUrl || undefined}
-            playing={isPlaying}
-            loop={true}
-            volume={isMuted ? 0 : volume}
-            width="100%"
-            height="100%"
-            playsinline={true} 
-            config={{ 
-                youtube: { playerVars: { playsinline: 1, showinfo: 0, controls: 0, disablekb: 1 } },
-                file: { 
-                    forceAudio: true, // 파일 재생 강제 설정
-                    attributes: { controls: true }
-                } 
-            }}
-            onError={(e) => {
-                console.error("Playback Error:", e);
-                setIsPlaying(false);
-                addToast("재생할 수 없는 소스입니다.", "error");
-            }}
-        />
-    </div>
-</div>
+{/* 숨겨진 플레이어 (수정됨: 1px 픽셀 대신 화면 밖으로 보내서 크기 확보) */}
+                    <div style={{ position: 'fixed', top: '-9999px', left: '-9999px' }}>
+                        <ReactPlayer 
+                            key={bgmUrl} 
+                            url={bgmUrl || undefined}
+                            playing={isPlaying}
+                            loop={true}
+                            volume={isMuted ? 0 : volume}
+                            width="640px"  // [중요] 유튜브/브라우저가 인식할 수 있는 충분한 크기
+                            height="360px" 
+                            playsinline={true} 
+                            config={{ 
+                                youtube: { 
+                                    playerVars: { 
+                                        playsinline: 1, 
+                                        showinfo: 0, 
+                                        controls: 0, 
+                                        disablekb: 1,
+                                        origin: window.location.origin // [추가] 보안 정책 준수
+                                    } 
+                                },
+                                file: { 
+                                    forceAudio: true, 
+                                    attributes: { 
+                                        controls: true,
+                                        crossOrigin: "anonymous" // [추가] CORS 문제 완화 시도
+                                    } 
+                                } 
+                            }}
+                            onError={(e) => {
+                                console.error("Playback Error:", e);
+                                setIsPlaying(false);
+                                addToast("재생할 수 없는 소스입니다 (링크 만료 또는 차단됨).", "error");
+                            }}
+                        />
+                    </div>
 
                 <div className="space-y-4">
                   <div className="group relative">
