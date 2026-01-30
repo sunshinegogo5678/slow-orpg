@@ -878,6 +878,7 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
   const updateBgmUrl = async (url: string) => {
     // 1. 화면 먼저 갱신
     setBgmUrl(url);
+    setIsPlaying(false); // [중요] URL 바뀌면 일단 멈춤
     setEditingField(null);
 
     // 2. DB 업데이트
