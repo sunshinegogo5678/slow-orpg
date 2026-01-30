@@ -13,7 +13,7 @@ import {
   Shield, Heart, ChevronLeft, Eye, EyeOff, Edit2, Brain, User,
   Lock, PenTool, Plus, Settings, Download, Copy, Check, HelpCircle,
   AlertCircle, Info, Trash2, ExternalLink,
-  Music, Volume2, VolumeX, Play, Pause, Save, RotateCcw // [추가] 초기화 아이콘
+  Music, Volume2, VolumeX, Play, Pause, Save, RotateCcw // [확인] RotateCcw 추가됨
 } from 'lucide-react';
 
 interface PlayroomProps {
@@ -893,7 +893,7 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
     }
   };
 
-  // [New] BGM Reset Handler
+  // [New] BGM Reset Handler (강제 초기화 버튼용)
   const handleResetBgm = async () => {
      console.log("Forcing BGM Reset...");
      setBgmUrl(null);
@@ -1083,9 +1083,8 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
     };
   }, [campaignId]);
 
-  // [수정: 자동재생 삭제 + 로그]
+  // [수정: 자동재생 삭제] URL이 바뀌면 일단 멈춥니다.
   useEffect(() => {
-    console.log("Current BGM URL state:", bgmUrl);
     if (bgmUrl) {
         setIsPlaying(false);
     }
