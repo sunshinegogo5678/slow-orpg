@@ -1591,6 +1591,7 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
                    {/* 숨겨진 플레이어 (유튜브 정책 준수를 위해 크기 0으로 설정하되 display:none은 지양) */}
                    <div className="fixed top-0 left-0 w-px h-px opacity-0 pointer-events-none overflow-hidden">
                       <ReactPlayer 
+                         key={bgmUrl} // [핵심 수정] URL이 바뀌면 컴포넌트를 강제 재생성(Reset)
                          url={bgmUrl || undefined}
                          playing={isPlaying}
                          loop={true}
