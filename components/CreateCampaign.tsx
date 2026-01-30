@@ -20,7 +20,7 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({ onCancel, onCreate }) =
     players: 4,
     description: '',
     coverImage: '',
-    discordWebhook: '', // [수정 1] 웹훅 상태 추가
+    discordWebhook: '', 
   });
 
   // Reset image error state when URL changes
@@ -57,7 +57,7 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({ onCancel, onCreate }) =
           gm_id: session.user.id,
           max_players: formData.players,
           cover_image: formData.coverImage || null,
-          discord_webhook_url: formData.discordWebhook || null, // [수정 2] DB에 웹훅 주소 저장
+          discord_webhook_url: formData.discordWebhook || null,
           invite_code: inviteCode
         })
         .select()
@@ -201,7 +201,7 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({ onCancel, onCreate }) =
               </div>
             </div>
 
-            {/* [수정 3] Discord Webhook Input Added Here */}
+            {/* Discord Webhook Input */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                 디스코드 웹훅 (Optional)
@@ -216,9 +216,15 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({ onCancel, onCreate }) =
                 />
                 <ExternalLink className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                채팅 로그를 디스코드 채널로 자동 전송하려면 웹훅 URL을 입력하세요.
-              </p>
+              {/* 여기 도움말이 두 줄로 변경되었습니다 */}
+              <div className="mt-2 space-y-1">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  채팅 로그를 디스코드 채널로 자동 전송하려면 웹훅 URL을 입력하세요.
+                </p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 leading-relaxed">
+                  디스코드 채널 설정 → 연동 → 웹훅에서 URL을 복사해 붙여넣으세요.
+                </p>
+              </div>
             </div>
 
             {/* Description */}
