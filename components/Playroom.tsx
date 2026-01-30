@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
-import ReactPlayer from 'react-player'; // BGM 플레이어
+// ReactPlayer 제거됨
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { FULL_COC_SKILL_LIST } from '../constants';
@@ -12,8 +12,8 @@ import {
   ChevronDown, Send, Dices, Menu, X, MapPin, Clock, 
   Shield, Heart, ChevronLeft, Eye, EyeOff, Edit2, Brain, User,
   Lock, PenTool, Plus, Settings, Download, Copy, Check, HelpCircle,
-  AlertCircle, Info, Trash2, ExternalLink,
-  Music, Volume2, VolumeX, Play, Pause, Save, RotateCcw 
+  AlertCircle, Info, Trash2, ExternalLink
+  // Music, Volume2, VolumeX, Play, Pause, Save 아이콘 제거됨
 } from 'lucide-react';
 
 interface PlayroomProps {
@@ -705,7 +705,6 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
   const [campaignData, setCampaignData] = useState<Campaign | null>(null); // Full campaign data for editing
 
   // --- Data State ---
-  // Initial state is EMPTY, no dummy data
   const [myCharacters, setMyCharacters] = useState<Character[]>([]);
   const [selectedCharId, setSelectedCharId] = useState<string | null>(null);
   
@@ -750,13 +749,7 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
   // --- Toasts ---
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  // BGM State
-  const [bgmUrl, setBgmUrl] = useState<string | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false); // [추가] 재생 여부
-  const [volume, setVolume] = useState(0.5);
-  const [isMuted, setIsMuted] = useState(false);
-  const [showVolume, setShowVolume] = useState(false);
-  const [tempBgmInput, setTempBgmInput] = useState(""); // [추가] 입력 중인 값 임시 저장
+  // BGM State Variables Removed Here
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -876,37 +869,7 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
     }
   };
 
-  const updateBgmUrl = async () => {
-    // 1. 화면 먼저 갱신
-    const url = tempBgmInput;
-    setBgmUrl(url);
-    setIsPlaying(false); // [중요] URL 바뀌면 일단 멈춤
-    setEditingField(null);
-
-    // 2. DB 업데이트
-    try {
-      await supabase.from('campaigns').update({ bgm_url: url }).eq('id', campaignId);
-      addToast("배경음악 주소가 저장되었습니다.", "success");
-    } catch (err) {
-      console.error("BGM Update failed:", err);
-      addToast("BGM 변경 실패", "error");
-    }
-  };
-
-  // [New] BGM Reset Handler (강제 초기화 버튼용)
-  const handleResetBgm = async () => {
-     console.log("Forcing BGM Reset...");
-     setBgmUrl(null);
-     setTempBgmInput("");
-     setIsPlaying(false);
-     try {
-         await supabase.from('campaigns').update({ bgm_url: null }).eq('id', campaignId);
-         addToast("BGM이 초기화되었습니다.", "success");
-     } catch (err) {
-         console.error("Reset failed", err);
-         addToast("초기화 실패", "error");
-     }
-  };
+  // updateBgmUrl Function Removed Here
 
   // 1. Fetch Campaign Info & User Profile & Characters
   useEffect(() => {
@@ -932,10 +895,7 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
              description: cData.scene_description || '아직 설정된 장면이 없습니다.',
            });
            setIsScenarioVisible(cData.is_scene_visible ?? true);
-           // [BGM] 초기 로드
-           console.log("Fetched BGM URL:", (cData as any).bgm_url); // [디버깅 로그]
-           setBgmUrl((cData as any).bgm_url || null);
-           setTempBgmInput((cData as any).bgm_url || ""); // 초기값 세팅
+           // BGM logic removed
         }
         
         if (profileRes.data) {
@@ -1067,12 +1027,7 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
            setIsScenarioVisible(newC.is_scene_visible ?? true);
            // Also update local campaign data if needed (e.g. webhook url changed by another GM)
            setCampaignData(prev => prev ? ({...prev, ...newC}) : newC);
-           // [BGM] 실시간 업데이트
-           if (newC.bgm_url !== undefined) {
-              setBgmUrl(newC.bgm_url);
-              setTempBgmInput(newC.bgm_url); // 동기화
-              setIsPlaying(false); // [중요] 외부에서 변경되면 일단 멈춤
-           }
+           // BGM logic removed
         }
       )
       .subscribe();
@@ -1082,13 +1037,6 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
       supabase.removeChannel(campaignChannel);
     };
   }, [campaignId]);
-
-  // [수정: 자동재생 삭제] URL이 바뀌면 일단 멈춥니다.
-  useEffect(() => {
-    if (bgmUrl) {
-        setIsPlaying(false);
-    }
-  }, [bgmUrl]);
 
   // Auto-scroll
   useEffect(() => {
@@ -1523,142 +1471,7 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
             {showContent ? (
               <div className="p-5 space-y-6 animate-fadeIn">
                 
-                {/* ▼▼▼ BGM Control Section (FIXED) ▼▼▼ */}
-                <div className="p-4 bg-slate-100 dark:bg-zinc-800 rounded-xl border border-slate-200 dark:border-zinc-700 shadow-sm transition-all hover:shadow-md">
-                   
-                   {/* 상단: 상태 표시 및 URL 입력 */}
-                   <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2 overflow-hidden w-full">
-                         <div className={`p-1.5 rounded-full flex-shrink-0 ${isPlaying ? 'bg-brand-100 text-brand-600 animate-pulse' : 'bg-slate-200 text-slate-400'}`}>
-                            <Music size={14} />
-                         </div>
-                         <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Background Music</p>
-                                {/* GM: 강제 초기화 버튼 */}
-                                {isGM && (
-                                    <button 
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleResetBgm();
-                                        }}
-                                        className="text-[10px] bg-rose-100 text-rose-600 px-1.5 py-0.5 rounded hover:bg-rose-200 transition-colors flex items-center gap-1 mb-0.5"
-                                        title="BGM 강제 초기화"
-                                    >
-                                        <RotateCcw size={10} /> Reset
-                                    </button>
-                                )}
-                            </div>
-
-                            {/* GM: URL 입력 / Player: 상태 텍스트 */}
-                            {isGM && editingField === 'bgm' ? (
-                               <div className="flex gap-2 mt-1">
-                                   <input 
-                                      autoFocus
-                                      className="flex-1 bg-white dark:bg-zinc-900 border border-brand-500 rounded px-1.5 py-0.5 text-xs text-slate-700 dark:text-slate-300 outline-none"
-                                      placeholder="YouTube / MP3 URL..."
-                                      value={tempBgmInput}
-                                      onChange={(e) => setTempBgmInput(e.target.value)}
-                                      onKeyDown={(e) => e.key === 'Enter' && updateBgmUrl()}
-                                   />
-                                   <button 
-                                      onClick={updateBgmUrl}
-                                      className="bg-brand-600 text-white p-1 rounded hover:bg-brand-700 transition-colors"
-                                   >
-                                      <Save size={14} />
-                                   </button>
-                                   <button 
-                                      onClick={() => setEditingField(null)}
-                                      className="bg-slate-300 text-slate-600 p-1 rounded hover:bg-slate-400 transition-colors"
-                                   >
-                                      <X size={14} />
-                                   </button>
-                               </div>
-                            ) : (
-                               <div className="flex items-center gap-1 group cursor-pointer mt-0.5" onClick={() => { if(isGM) { setEditingField('bgm'); setTempBgmInput(bgmUrl || ''); } }}>
-                                  <p className={`text-xs font-medium truncate ${isPlaying ? 'text-brand-600 dark:text-brand-400' : 'text-slate-500'}`}>
-                                     {bgmUrl ? (isPlaying ? 'Now Playing ♪' : 'Paused (Click to Edit)') : 'No Music Selected'}
-                                  </p>
-                                  {isGM && <Edit2 size={10} className="opacity-0 group-hover:opacity-100 text-slate-400" />}
-                               </div>
-                            )}
-                         </div>
-                      </div>
-                   </div>
-
-                   {/* 하단: 컨트롤러 (재생/정지 + 볼륨) */}
-                   <div className="flex items-center gap-2 bg-white dark:bg-zinc-900/50 p-2 rounded-lg border border-slate-100 dark:border-zinc-700/50">
-                      
-                      {/* 1. 재생/일시정지 버튼 */}
-                      <button 
-                        onClick={() => setIsPlaying(!isPlaying)}
-                        disabled={!bgmUrl}
-                        className={`p-2 rounded-full transition-all ${
-                           !bgmUrl ? 'text-slate-300 cursor-not-allowed' : 
-                           isPlaying 
-                             ? 'bg-brand-50 text-brand-600 hover:bg-brand-100' 
-                             : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-zinc-800 dark:text-slate-300'
-                        }`}
-                        title={isPlaying ? "일시정지" : "재생"}
-                      >
-                         {isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" className="ml-0.5" />}
-                      </button>
-
-                      {/* 구분선 */}
-                      <div className="w-px h-6 bg-slate-200 dark:bg-zinc-700 mx-1"></div>
-
-                      {/* 2. 볼륨 아이콘 */}
-                      <button 
-                        onClick={() => setIsMuted(!isMuted)} 
-                        className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1"
-                      >
-                         {isMuted || volume === 0 ? <VolumeX size={16} /> : <Volume2 size={16} />}
-                      </button>
-
-                      {/* 3. 볼륨 슬라이더 */}
-                      <input 
-                        type="range" 
-                        min="0" max="1" step="0.05" 
-                        value={isMuted ? 0 : volume}
-                        onChange={(e) => { setVolume(parseFloat(e.target.value)); setIsMuted(false); }}
-                        className="flex-1 h-1.5 bg-slate-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-brand-600 hover:accent-brand-500"
-                      />
-                   </div>
-
-                   {/* 숨겨진 플레이어 (화면 밖으로 보내서 브라우저 정책 회피 + 1px 문제 해결) */}
-                   <div style={{ position: 'fixed', top: '-9999px', left: '-9999px' }}>
-                      <ReactPlayer 
-                         key={bgmUrl} 
-                         url={bgmUrl || undefined}
-                         playing={isPlaying}
-                         loop={true}
-                         volume={isMuted ? 0 : volume}
-                         width="640px"
-                         height="360px"
-                         playsinline={true} 
-                         config={{ 
-                            youtube: { 
-                                playerVars: { 
-                                    playsinline: 1, 
-                                    showinfo: 0, 
-                                    controls: 0, 
-                                    disablekb: 1,
-                                    origin: typeof window !== 'undefined' ? window.location.origin : undefined
-                                } 
-                            },
-                            file: { 
-                               forceAudio: true, 
-                               attributes: { controls: true, crossOrigin: "anonymous" }
-                            } 
-                         }}
-                         onError={(e) => {
-                            console.error("Playback Error:", e);
-                            setIsPlaying(false);
-                            addToast("재생할 수 없는 소스입니다 (CORS/만료됨).", "error");
-                         }}
-                      />
-                   </div>
-                </div>
+                {/* [삭제됨] BGM Control Section Removed Here */}
 
                 <div className="space-y-4">
                   <div className="group relative">
@@ -2178,12 +1991,6 @@ const Playroom: React.FC<PlayroomProps> = ({ campaignId, onExit, onCreateCharact
             onClick={() => setMobileMenuOpen(false)}
         ></div>
       )}
-
-      {/* 배포 확인용 코드 삽입 */}
-      <div className="fixed bottom-2 right-2 z-[9999] bg-red-600 text-white px-3 py-1 text-sm font-bold rounded shadow-lg pointer-events-none animate-bounce">
-        🚀 DEPLOY TEST 2026-01-30 (BGM Fix)
-      </div>
-
     </div>
   );
 };
