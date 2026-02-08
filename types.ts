@@ -4,6 +4,7 @@ export type User = {
   avatarUrl: string;
 };
 
+//
 // Matches Supabase 'campaigns' table structure
 export type Campaign = {
   id: string;
