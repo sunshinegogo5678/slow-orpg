@@ -16,7 +16,7 @@ CoC 7판을 위한 웹 기반 ORPG 툴입니다.
 ### 1단계: 배포 버튼 클릭
 아래 버튼을 눌러 Vercel에 이 프로젝트를 복제합니다.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=[https://github.com/sunshinegogo5678/slow-orpg]&env=VITE_SUPABASE_URL,VITE_SUPABASE_ANON_KEY)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsunshinegogo5678%2Fslow-orpg&env=VITE_SUPABASE_URL,VITE_SUPABASE_ANON_KEY)
 
 > **참고:** Vercel 설정 중 `Environment Variables` 입력칸이 나오면 일단 비워두거나 아무거나 적고 넘어가셔도 됩니다. (3단계에서 넣을 예정)
 
